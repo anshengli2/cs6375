@@ -16,7 +16,7 @@ from sklearn.preprocessing import OneHotEncoder
 from scipy.special import expit
 
 le = preprocessing.LabelEncoder()
-dataset = pd.read_csv("NYSE.csv")
+dataset = pd.read_csv("Nasdaq_convert.csv")
 X = dataset.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
 y = dataset['Label']
 
@@ -36,7 +36,7 @@ stock = ohe.fit_transform(X_train)
 # get the categorical and numeric column names
 num_cols = X_train.select_dtypes(exclude=['object']).columns.tolist()
 cat_cols = X_train.select_dtypes(include=['object']).columns.tolist()
-print(num_cols)
+print(num_cols, cat_cols)
 # pipeline for numerical columns
 num_pipe = make_pipeline(
     SimpleImputer(strategy='median'),
@@ -56,7 +56,7 @@ full_pipe = ColumnTransformer([
 
 # build the model
 logreg = make_pipeline(
-    full_pipe, LogisticRegression(max_iter=1000, random_state=42))
+    full_pipe, LogisticRegression(max_iter=1000, random_state=69))
 
 # train the model
 logreg.fit(X_train, y_train)
