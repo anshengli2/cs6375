@@ -17,12 +17,11 @@ from scipy.special import expit
 
 le = preprocessing.LabelEncoder()
 dataset = pd.read_csv("Nasdaq_convert.csv")
-X = dataset.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
-y = dataset['Label']
+dataset2 = pd.read_csv("nyse_convert.csv")
+merged = pd.concat([dataset, dataset2])
 
-dataset2 = pd.read_csv("NYSE.csv")
-X2 = dataset2.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
-y2 = dataset2['Label']
+X = merged.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
+y = merged['Label']
 # split the data into training and test set
 # X_train = X
 # X_test = X2
