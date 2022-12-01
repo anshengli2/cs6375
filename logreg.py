@@ -13,8 +13,6 @@ class LogisticRegression():
     def __init__(self, fit_intercept=True, verbose=True):
         self.fit_intercept = fit_intercept
         self.verbose = verbose
-        self.loss_history = []
-        self.iter_history = []
 
     def add_intercept(self, X):
         intercept = np.ones((X.shape[0], 1))
@@ -32,9 +30,7 @@ class LogisticRegression():
 
     z = (theta^t)(x), where theta is the weight
     sigmoid(z) = 1 / (1 + e^-(z))
-    """
 
-    """
     Gradient descent - derivative of the loss function with respect to the weights
     The goal is to minimize the loss (cost function) by increasing or decreasing the weights (fitting)
     The weights are updated by subtracting the gradient times the learning rate
@@ -46,6 +42,8 @@ class LogisticRegression():
 
         # weights initialization
         self.weights = np.zeros(X.shape[1])
+        self.loss_history = []
+        self.iter_history = []
 
         for i in range(num_iter):
             z = np.dot(X, self.weights)
