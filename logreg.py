@@ -27,10 +27,8 @@ class LogisticRegression():
 
     """
     Sigmoid function predict or classify a given input
-
     z = (theta^t)(x), where theta is the weight
     sigmoid(z) = 1 / (1 + e^-(z))
-
     Gradient descent - derivative of the loss function with respect to the weights
     The goal is to minimize the loss (cost function) by increasing or decreasing the weights (fitting)
     The weights are updated by subtracting the gradient times the learning rate
