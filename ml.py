@@ -14,20 +14,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
 from scipy.special import expit
-
+import csv
 le = preprocessing.LabelEncoder()
-dataset = pd.read_csv("NYSE.csv")
-X = dataset.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
-y = dataset['Label']
+dataset = pd.read_csv("training_set.csv", index_col=[0])
 
-dataset2 = pd.read_csv("NYSE.csv")
-X2 = dataset2.drop(['Symbol', 'Start', 'End', 'Label'], axis=1)
-y2 = dataset2['Label']
+X = dataset.drop(['Symbol', 'Start', 'End', 'Label'], axis=1).copy()
+y = dataset['Label'].copy()
 # split the data into training and test set
-# X_train = X
-# X_test = X2
-# y_train = y
-# y_test = y2
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42)
 ohe = OneHotEncoder(sparse=False)
@@ -36,7 +30,6 @@ stock = ohe.fit_transform(X_train)
 # get the categorical and numeric column names
 num_cols = X_train.select_dtypes(exclude=['object']).columns.tolist()
 cat_cols = X_train.select_dtypes(include=['object']).columns.tolist()
-print(num_cols)
 # pipeline for numerical columns
 num_pipe = make_pipeline(
     SimpleImputer(strategy='median'),
