@@ -175,19 +175,32 @@ if __name__ == "__main__":
     # y_train = np.hstack(y_train)
     # y_test = np.hstack(y_test)
 
-    # # Change the kernel and C value
+    ############ Change the kernel and C value ################
     # clf = SVM(gaussian_kernel, param=10, C=10)
     # clf.fit(x_train, y_train)
 
-    # # Validation set
-    # y_predict = clf.predict(x_test)
-    # accuracy = accuracy_score(y_test, y_predict)
+    ################ Validation set #####################
+    # y_pred = clf.predict(x_test)
+    # accuracy = accuracy_score(y_test, y_pred)
     # print("Training Accuracy Score:", accuracy)
-
-    # # Test set
-    # y_predict = clf.predict(x_test_data)
-    # accuracy = accuracy_score(y_test_data, y_predict)
+    ############ Confusion Matrix #################
+    #     ax = plt.axes()
+    #     cf_matrix = metrics.confusion_matrix(y_test, y_pred)
+    #     s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
+    #     s.set(xlabel='Predicted Label', ylabel='True Label')
+    #     ax.set_title("Accuracy = " + str(accuracy))
+    #     plt.show()
+    ######################## Test set ###########################
+    # y_pred = clf.predict(x_test_data)
+    # accuracy = accuracy_score(y_test_data, y_pred)
     # print("Test Accuracy Score:", accuracy)
+    ############ Confusion Matrix #################
+    #     ax = plt.axes()
+    #     cf_matrix = metrics.confusion_matrix(y_test_data, y_pred)
+    #     s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
+    #     s.set(xlabel='Predicted Label', ylabel='True Label')
+    #     ax.set_title("Accuracy = " + str(accuracy))
+    #     plt.show()
     ##################################################################
 
     # List the hyperparameter for your kernel
