@@ -16,7 +16,7 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
-
+import random
 data = pd.read_csv("training_set_0.csv")
 data = data.copy()
 # Convert label UP=1 and DOWN=0
@@ -53,14 +53,15 @@ learningRate = [0.001, 0.01, 0.1]
 models = []
 final_models = []
 final_weights = []
-kf = KFold(n_splits=10)
-boostrap = 20
+boostrap = 10
 for b in range(boostrap):
     print("bootstrap number:", b)
     for i in learningRate:
         k = 1
         acc = []
         models = []
+        kf = KFold(n_splits=10, random_state=int(
+            random.randint(0, 1000)), shuffle=True)
         for train_index, test_index in kf.split(X):
             # print("TRAIN:", train_index, "TEST:", test_index)
             x_train, x_test = X.iloc[train_index], X.iloc[test_index]
