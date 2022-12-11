@@ -150,6 +150,7 @@ if __name__ == "__main__":
         ['Symbol', 'Start', 'End', 'Label'], axis=1).copy()
     y_test_data = test_data['Label'].copy()
     y_test_data = np.hstack(y_test_data)
+
     # Standardizing the feature values
     sc_x = StandardScaler()
     x_test_data = sc_x.fit_transform(x_test_data)
@@ -168,9 +169,16 @@ if __name__ == "__main__":
     y_train = np.hstack(y_train)
     y_test = np.hstack(y_test)
 
+    # Change the kernel and C value
     clf = SVM(rbf_kernel, C=100)
     clf.fit(x_train, y_train)
 
+    # Validation set
     y_predict = clf.predict(x_test)
     accuracy = accuracy_score(y_test, y_predict)
-    print("Accuracy Score:", accuracy)
+    print("Training Accuracy Score:", accuracy)
+
+    # Test set
+    y_predict = clf.predict(x_test_data)
+    accuracy = accuracy_score(y_test_data, y_predict)
+    print("Test Accuracy Score:", accuracy)
