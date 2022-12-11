@@ -159,6 +159,9 @@ if __name__ == "__main__":
     x_test_data = sc_x.fit_transform(x_test_data)
     x_test_data = np.vstack(x_test_data)
 
+    ####################################################################
+    # Use this section for test set with the kernel and the hyperparameter
+    ##################################################################
     # x_train, x_test, y_train, y_test = train_test_split(
     #     X, y, test_size=0.2, random_state=42)
     # # Standardizing the feature values
@@ -185,20 +188,20 @@ if __name__ == "__main__":
     # y_predict = clf.predict(x_test_data)
     # accuracy = accuracy_score(y_test_data, y_predict)
     # print("Test Accuracy Score:", accuracy)
+    ##################################################################
 
-    models = []
-    final_models = []
-    hyperparameter = [1, 10]  # List the hyperparameter for your kernel
+    # List the hyperparameter for your kernel
+    hyperparameter = [0.01, 0.1, 1, 3]
     c_value = [0.01, 0.1, 1, 10]  # List the c for the SVM
     kf = KFold(n_splits=5)
     for i in hyperparameter:
-        k = 1
-        acc = []
-        models = []
         for c in c_value:
+            acc = []
+            f1 = []
+            precision = []
+            recall = []
             print("Using parameter {} and C={}".format(i, c))
             for train_index, test_index in kf.split(X):
-                # print("TRAIN:", train_index, "TEST:", test_index)
                 x_train, x_test = X.iloc[train_index], X.iloc[test_index]
                 y_train, y_test = y.iloc[train_index], y.iloc[test_index]
                 sc_x = StandardScaler()
@@ -211,19 +214,20 @@ if __name__ == "__main__":
                 ########################################
                 # Change the kernel here
                 ########################################
-                clf = SVM(gaussian_kernel, param=i, C=c)
+                clf = SVM(rbf_kernel, param=i, C=c)
                 clf.fit(x_train, y_train)
                 y_pred = clf.predict(x_test)
                 accuracy = accuracy_score(y_test, y_pred)
-                print("Accuracy Score K={}: {}".format(k, accuracy))
-                print("F1-score: ", metrics.f1_score(y_test, y_pred))
-                print("Precision: ", metrics.precision_score(y_test, y_pred))
-                print("Recall: ", metrics.recall_score(y_test, y_pred))
                 acc.append(accuracy)
-                models.append([accuracy, x_train, y_train, i, c])
-                k += 1
+                f1.append(metrics.f1_score(y_test, y_pred))
+                precision.append(metrics.precision_score(y_test, y_pred))
+                recall.append(metrics.recall_score(y_test, y_pred))
 
-            print("LR: {} Min: {} Max: {} Avg: {}".format(
-                i, np.min(acc), np.max(acc), np.average(acc)))
-            # print(np.argmax(acc), models[np.argmax(acc)][2])
-            # final_models.append(models[np.argsort(acc)[len(acc)//2]])
+            print("Accuracy-Score Min: {} Max: {} Avg: {}".format(np.min(acc),
+                  np.max(acc), np.average(acc)))
+            print("F1-Score Min: {} Max: {} Avg: {}".format(np.min(f1),
+                  np.max(f1), np.average(f1)))
+            print("Precision-Score Min: {} Max: {} Avg: {}".format(np.min(precision),
+                                                                   np.max(precision), np.average(precision)))
+            print("Recall-Score Min: {} Max: {} Avg: {}".format(np.min(recall),
+                                                                np.max(recall), np.average(recall)))
