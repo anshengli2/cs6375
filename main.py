@@ -19,7 +19,6 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
-from svm import SVM
 
 data = pd.read_csv("training_set_0.csv")
 data = data.copy()
