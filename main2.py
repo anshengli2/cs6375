@@ -26,28 +26,31 @@ from sklearn.metrics import roc_auc_score
 cvxopt.solvers.options['show_progress'] = False
 
 
-def linear_kernel(x1, x2):
+def linear_kernel(x1, x2, x3=None):
     return np.dot(x1, x2)
 
 
-def polynomial_kernel(x, y, p=3):
+def polynomial_kernel(x, y, p):
     return (1 + np.dot(x, y)) ** p
 
 
-def gaussian_kernel(x, y, sigma=10):
+def gaussian_kernel(x, y, sigma):
     return np.exp(-linalg.norm(x-y)**2 / (2 * (sigma ** 2)))
 
 
-def rbf_kernel(x, y, gamma=100):
+def rbf_kernel(x, y, gamma):
     return np.exp(-gamma * np.linalg.norm(x - y) ** 2)
 
 
 class SVM(object):
-    def __init__(self, kernel=gaussian_kernel, C=None):
+    def __init__(self, kernel=gaussian_kernel, param=None, C=None):
         self.kernel = kernel
         self.C = C
         if self.C is not None:
             self.C = float(self.C)
+        self.param = param
+        if self.param is not None:
+            self.param = float(self.param)
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
@@ -56,7 +59,7 @@ class SVM(object):
         K = np.zeros((n_samples, n_samples))
         for i in range(n_samples):
             for j in range(n_samples):
-                K[i, j] = self.kernel(X[i], X[j])
+                K[i, j] = self.kernel(X[i], X[j], self.param)
 
         P = cvxopt.matrix(np.outer(y, y) * K)
         q = cvxopt.matrix(np.ones(n_samples) * -1)
@@ -103,7 +106,7 @@ class SVM(object):
         else:
             self.w = None
 
-    def project(self, X):
+    def predict_set(self, X):
         if self.w is not None:
             return np.dot(X, self.w) + self.b
         else:
@@ -111,12 +114,12 @@ class SVM(object):
             for i in range(len(X)):
                 s = 0
                 for a, sv_y, sv in zip(self.a, self.sv_y, self.sv):
-                    s += a * sv_y * self.kernel(X[i], sv)
+                    s += a * sv_y * self.kernel(X[i], sv, self.param)
                 y_predict[i] = s
             return y_predict + self.b
 
     def predict(self, X):
-        return np.sign(self.project(X))
+        return np.sign(self.predict_set(X))
 
 
 if __name__ == "__main__":
@@ -156,29 +159,71 @@ if __name__ == "__main__":
     x_test_data = sc_x.fit_transform(x_test_data)
     x_test_data = np.vstack(x_test_data)
 
-    x_train, x_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
-    # Standardizing the feature values
-    sc_x = StandardScaler()
-    x_train = sc_x.fit_transform(x_train)
-    x_train = np.vstack(x_train)
+    # x_train, x_test, y_train, y_test = train_test_split(
+    #     X, y, test_size=0.2, random_state=42)
+    # # Standardizing the feature values
+    # sc_x = StandardScaler()
+    # x_train = sc_x.fit_transform(x_train)
+    # x_train = np.vstack(x_train)
 
-    x_test = sc_x.transform(x_test)
-    x_test = np.vstack(x_test)
+    # x_test = sc_x.transform(x_test)
+    # x_test = np.vstack(x_test)
 
-    y_train = np.hstack(y_train)
-    y_test = np.hstack(y_test)
+    # y_train = np.hstack(y_train)
+    # y_test = np.hstack(y_test)
 
-    # Change the kernel and C value
-    clf = SVM(rbf_kernel, C=100)
-    clf.fit(x_train, y_train)
+    # # Change the kernel and C value
+    # clf = SVM(gaussian_kernel, param=10, C=10)
+    # clf.fit(x_train, y_train)
 
-    # Validation set
-    y_predict = clf.predict(x_test)
-    accuracy = accuracy_score(y_test, y_predict)
-    print("Training Accuracy Score:", accuracy)
+    # # Validation set
+    # y_predict = clf.predict(x_test)
+    # accuracy = accuracy_score(y_test, y_predict)
+    # print("Training Accuracy Score:", accuracy)
 
-    # Test set
-    y_predict = clf.predict(x_test_data)
-    accuracy = accuracy_score(y_test_data, y_predict)
-    print("Test Accuracy Score:", accuracy)
+    # # Test set
+    # y_predict = clf.predict(x_test_data)
+    # accuracy = accuracy_score(y_test_data, y_predict)
+    # print("Test Accuracy Score:", accuracy)
+
+    models = []
+    final_models = []
+    hyperparameter = [1, 10]  # List the hyperparameter for your kernel
+    c_value = [0.01, 0.1, 1, 10]  # List the c for the SVM
+    kf = KFold(n_splits=5)
+    for i in hyperparameter:
+        k = 1
+        acc = []
+        models = []
+        for c in c_value:
+            print("Using parameter {} and C={}".format(i, c))
+            for train_index, test_index in kf.split(X):
+                # print("TRAIN:", train_index, "TEST:", test_index)
+                x_train, x_test = X.iloc[train_index], X.iloc[test_index]
+                y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+                sc_x = StandardScaler()
+                x_train = sc_x.fit_transform(x_train)
+                x_train = np.vstack(x_train)
+                x_test = sc_x.transform(x_test)
+                x_test = np.vstack(x_test)
+                y_train = np.hstack(y_train)
+                y_test = np.hstack(y_test)
+                ########################################
+                # Change the kernel here
+                ########################################
+                clf = SVM(gaussian_kernel, param=i, C=c)
+                clf.fit(x_train, y_train)
+                y_pred = clf.predict(x_test)
+                accuracy = accuracy_score(y_test, y_pred)
+                print("Accuracy Score K={}: {}".format(k, accuracy))
+                print("F1-score: ", metrics.f1_score(y_test, y_pred))
+                print("Precision: ", metrics.precision_score(y_test, y_pred))
+                print("Recall: ", metrics.recall_score(y_test, y_pred))
+                acc.append(accuracy)
+                models.append([accuracy, x_train, y_train, i, c])
+                k += 1
+
+            print("LR: {} Min: {} Max: {} Avg: {}".format(
+                i, np.min(acc), np.max(acc), np.average(acc)))
+            # print(np.argmax(acc), models[np.argmax(acc)][2])
+            # final_models.append(models[np.argsort(acc)[len(acc)//2]])
