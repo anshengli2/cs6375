@@ -135,9 +135,9 @@ if __name__ == "__main__":
     test_data = pd.read_csv("test_set_0.csv")
     test_data.reset_index()
     test_data = test_data.copy()
-    # Convert label UP=1 and DOWN=0
+    # Convert label UP=1 and DOWN=-1
     test_data['Label'] = test_data['Label'].apply(
-        lambda x: 1 if x == "UP" else 0)
+        lambda x: 1 if x == "UP" else -1)
 
     test_data['Sector'].replace(['Consumer Discretionary', 'Health Care', 'Finance', 'Technology',
                                 'Industrials', 'Miscellaneous', 'Utilities', 'Telecommunications',
