@@ -1,4 +1,9 @@
 
+from sklearn.metrics import classification_report
+from sklearn.metrics import mean_squared_error
+from sklearn.inspection import permutation_importance
+from sklearn import datasets, ensemble
+from sklearn.ensemble import GradientBoostingClassifier
 from numpy import linalg
 from sklearn import svm
 from sklearn.datasets import make_classification
@@ -45,23 +50,11 @@ y = data['Label'].copy()
 x_test_data = test_data.drop(
     ['Symbol', 'Start', 'End', 'Label'], axis=1).copy()
 y_test_data = test_data['Label'].copy()
-# Standardizing the feature values
-sc_x = StandardScaler()
-x_test_data = sc_x.fit_transform(x_test_data)
-
-x_train, x_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42)
-# Standardizing the feature values
-sc_x = StandardScaler()
-x_train = sc_x.fit_transform(x_train)
-x_test = sc_x.transform(x_test)
-warnings.filterwarnings('ignore')
-
 
 """
 Logistic Regression
 """
-# warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore')
 # learningRate = [0.001, 0.01, 0.1]
 # models = []
 # final_models = []
@@ -71,6 +64,9 @@ Logistic Regression
 #     k = 1
 #     acc = []
 #     models = []
+#     f1 = []
+#     precision = []
+#     recall = []
 #     for train_index, test_index in kf.split(X):
 #         # print("TRAIN:", train_index, "TEST:", test_index)
 #         x_train, x_test = X.iloc[train_index], X.iloc[test_index]
@@ -78,59 +74,71 @@ Logistic Regression
 #         sc_x = StandardScaler()
 #         x_train = sc_x.fit_transform(x_train)
 #         x_test = sc_x.transform(x_test)
-#         # lr = CustomLogisticRegression()
-#         # lr.fit_sigmoid(x_train, y_train, learning_rate=i, num_iter=10000)
-#         # y_pred = lr.predict(x_test)
-#         svm = SVM(learning_rate=i)
-#         svm.fit(x_train, y_train)
-#         y_pred = svm.predict(x_test)
+#         lr = CustomLogisticRegression()
+#         lr.fit_sigmoid(x_train, y_train, learning_rate=i, num_iter=10000)
+#         y_pred = lr.predict(x_test)
 #         accuracy = accuracy_score(y_test, y_pred)
-#         print("Accuracy Score K={}: {}".format(k, accuracy))
+#         # print("Accuracy Score K={}: {}".format(k, accuracy))
 #         acc.append(accuracy)
-#         models.append([accuracy, x_train, y_train, i])
+#         f1.append(metrics.f1_score(y_test, y_pred))
+#         precision.append(metrics.precision_score(y_test, y_pred))
+#         recall.append(metrics.recall_score(y_test, y_pred))
+#         models.append([accuracy, train_index, i])
 #         k += 1
-
 #     print("LR: {} Min: {} Max: {} Avg: {}".format(
 #         i, np.min(acc), np.max(acc), np.average(acc)))
+#     print("F1-Score Min: {} Max: {} Avg: {}".format(np.min(f1),
+#                                                     np.max(f1), np.average(f1)))
+#     print("Precision-Score Min: {} Max: {} Avg: {}".format(np.min(precision),
+#                                                            np.max(precision), np.average(precision)))
+#     print("Recall-Score Min: {} Max: {} Avg: {}".format(np.min(recall),
+#                                                         np.max(recall), np.average(recall)))
 #     # print(np.argmax(acc), models[np.argmax(acc)][2])
 #     final_models.append(models[np.argsort(acc)[len(acc)//2]])
 
 # models = []
-# for acc, x_train, y_train, learning_rate in final_models:
-#     lr = CustomLogisticRegression()
-#     lr.fit_sigmoid(x_train, y_train,
-#                    learning_rate=learning_rate, num_iter=10000)
-#     print("Learning rate: ", learning_rate)
-#     print("Final weights: ", lr.weights)
-#     print("Final cost: ", lr.loss_history[-1])
-#     models.append([lr.loss_history, lr.iter_history])
-#     y_pred = lr.predict(x_test_data)
-#     accuracy = accuracy_score(y_test_data, y_pred)
-#     print("Accuracy Score:", accuracy)
+x_train, x_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+# Standardizing the feature values
+sc_x = StandardScaler()
+x_train = sc_x.fit_transform(x_train)
+x_test = sc_x.transform(x_test)
+x_test_data = sc_x.transform(x_test_data)
 
-#     # Decision boundary
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111)
-#     df = pd.DataFrame({'x': [x for x in range(len(x_test_data))],
-#                        'y': [y_l for y_l in y_test_data],
-#                        'y_pred_prob': np.array(lr.predict_prob(x_test_data))})
-#     df['y'] = df['y'].apply(lambda x: "UP" if x == 1 else "DOWN")
-#     sn.scatterplot(data=df, x='x', y='y_pred_prob', style='y', hue='y')
-#     plt.legend(loc='upper right')
-#     ax.set_title("Decision Boundary   Accuracy=" + str(accuracy))
-#     ax.set_xlabel('N/2')
-#     ax.set_ylabel('Predicted Probability')
-#     plt.axhline(.5, color='black')
-#     plt.show()
+# lr = CustomLogisticRegression()
+# lr.fit_sigmoid(x_train, y_train,
+#                learning_rate=0.1, num_iter=10000)
+# print("Final weights: ", lr.weights)
+# y_pred = lr.predict(x_test_data)
+# accuracy = accuracy_score(y_test_data, y_pred)
+# print("Accuracy Score:", accuracy)
+# print("f1 ", metrics.f1_score(y_test_data, y_pred))
+# print("precision", metrics.precision_score(y_test_data, y_pred))
+# print("recall ", metrics.recall_score(y_test_data, y_pred))
 
-#     # Confusion Matrix
-#     ax = plt.axes()
-#     cf_matrix = metrics.confusion_matrix(y_test_data, y_pred)
-#     s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
-#     s.set(xlabel='Predicted Label', ylabel='True Label')
-#     ax.set_title("Learning rate = " + str(learning_rate) +
-#                  "     Accuracy = " + str(accuracy))
-#     plt.show()
+# # Decision boundary
+# fig = plt.figure()
+# ax = fig.add_subplot(111)
+# df = pd.DataFrame({'x': [x for x in range(len(x_test_data))],
+#                    'y': [y_l for y_l in y_test_data],
+#                    'y_pred_prob': np.array(lr.predict_prob(x_test_data))})
+# df['y'] = df['y'].apply(lambda x: "UP" if x == 1 else "DOWN")
+# sn.scatterplot(data=df, x='x', y='y_pred_prob', style='y', hue='y')
+# plt.legend(loc='upper right')
+# ax.set_title("Decision Boundary   Accuracy=" + str(accuracy))
+# ax.set_xlabel('N/2')
+# ax.set_ylabel('Predicted Probability')
+# plt.axhline(.5, color='black')
+# plt.show()
+
+# # Confusion Matrix
+# ax = plt.axes()
+# cf_matrix = metrics.confusion_matrix(y_test_data, y_pred)
+# s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
+# s.set(xlabel='Predicted Label', ylabel='True Label')
+# ax.set_title("Learning rate = " + str(0.1) +
+#              "     Accuracy = " + str(accuracy))
+# plt.show()
 #############################################################################################
 #     ns_probs = [0 for _ in range(len(y_test_data))]
 #     lr_probs = np.array(lr.predict_prob(x_test_data)[0])
@@ -205,28 +213,38 @@ Logistic Regression
 
 
 # print("\nSklearn's logistic regression")
-# # Split a dataset into a train and test set
-# x_train, x_val, y_train, y_val = train_test_split(
-#     X, y, test_size=0.2, random_state=42)
+logisticRegr = LogisticRegression(learning_rate=0.1)
+logisticRegr.fit(x_train, y_train)  # apply scaling on training data
+# make predictions on training set
+y_pred = logisticRegr.predict(x_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Train Accuracy Score:", accuracy)
+print("f1 ", metrics.f1_score(y_test, y_pred))
+print("precision", metrics.precision_score(y_test, y_pred))
+print("recall ", metrics.recall_score(y_test, y_pred))
+plot_confusion_matrix(logisticRegr, x_test, y_test)
+plt.show()
+# make predictions on the test set
+y_pred = logisticRegr.predict(x_test_data)
+accuracy = accuracy_score(y_test_data, y_pred)
+print("Test Accuracy Score:", accuracy)
+print("f1 ", metrics.f1_score(y_test_data, y_pred))
+print("precision", metrics.precision_score(y_test_data, y_pred))
+print("recall ", metrics.recall_score(y_test_data, y_pred))
+plot_confusion_matrix(logisticRegr, x_test_data, y_test_data)
+plt.show()
+scores = cross_val_score(logisticRegr, x_train, y_train, cv=10)
+print('Cross-Validation Accuracy Scores', scores)
+scores = pd.Series(scores)
+print("Average: {}".format(scores.mean()))
 
-# logisticRegr = LogisticRegression()
-# logisticRegr.fit(x_train, y_train)  # apply scaling on training data
-# # make predictions on the test set
-# y_pred = logisticRegr.predict(x_val)
-# accuracy = accuracy_score(y_val, y_pred)
-# # lr = CustomLogisticRegression()
-# # lr.fit_sigmoid(x_train, y_train, learning_rate=0.1, num_iter=10000)
-# scores = cross_val_score(logisticRegr, x_train, y_train, cv=10)
-# print('Cross-Validation Accuracy Scores', scores)
-# scores = pd.Series(scores)
-# print("Min: {} Max: {}, Average: {}".format(
-#     scores.min(), scores.max(), scores.mean()))
-# print("Accuracy Score:", accuracy)
-# plot_confusion_matrix(logisticRegr, x_val, y_val)
-# plt.show()
-
-# y_pred = logisticRegr.predict(x_test_data)
-# accuracy = accuracy_score(y_test_data, y_pred)
-# print("Accuracy Score:", accuracy)
-# plot_confusion_matrix(logisticRegr, x_test_data, y_test_data)
-# plt.show()
+# Gradient Boosting
+gradient_booster = GradientBoostingClassifier(learning_rate=0.1)
+gradient_booster.fit(x_train, y_train)
+y_pred = gradient_booster.predict(x_test_data)
+print("accuracy ", metrics.accuracy_score(y_test_data, y_pred))
+print("f1 ", metrics.f1_score(y_test_data, y_pred))
+print("precision", metrics.precision_score(y_test_data, y_pred))
+print("recall ", metrics.recall_score(y_test_data, y_pred))
+plot_confusion_matrix(gradient_booster, x_test_data, y_test_data)
+plt.show()

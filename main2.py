@@ -154,93 +154,94 @@ if __name__ == "__main__":
     y_test_data = test_data['Label'].copy()
     y_test_data = np.hstack(y_test_data)
 
-    # Standardizing the feature values
-    sc_x = StandardScaler()
-    x_test_data = sc_x.fit_transform(x_test_data)
-    x_test_data = np.vstack(x_test_data)
-
     ####################################################################
     # Use this section for test set with the kernel and the hyperparameter
     ##################################################################
-    # x_train, x_test, y_train, y_test = train_test_split(
-    #     X, y, test_size=0.2, random_state=42)
-    # # Standardizing the feature values
-    # sc_x = StandardScaler()
-    # x_train = sc_x.fit_transform(x_train)
-    # x_train = np.vstack(x_train)
+    x_train, x_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
+    # Standardizing the feature values
+    sc_x = StandardScaler()
+    x_train = sc_x.fit_transform(x_train)
+    x_train = np.vstack(x_train)
 
-    # x_test = sc_x.transform(x_test)
-    # x_test = np.vstack(x_test)
+    x_test = sc_x.transform(x_test)
+    x_test = np.vstack(x_test)
 
-    # y_train = np.hstack(y_train)
-    # y_test = np.hstack(y_test)
+    y_train = np.hstack(y_train)
+    y_test = np.hstack(y_test)
 
-    ############ Change the kernel and C value ################
-    # clf = SVM(gaussian_kernel, param=10, C=10)
-    # clf.fit(x_train, y_train)
+    x_test_data = sc_x.transform(x_test_data)
+    x_test_data = np.vstack(x_test_data)
 
-    ################ Validation set #####################
-    # y_pred = clf.predict(x_test)
-    # accuracy = accuracy_score(y_test, y_pred)
-    # print("Training Accuracy Score:", accuracy)
-    ############ Confusion Matrix #################
-    #     ax = plt.axes()
-    #     cf_matrix = metrics.confusion_matrix(y_test, y_pred)
-    #     s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
-    #     s.set(xlabel='Predicted Label', ylabel='True Label')
-    #     ax.set_title("Accuracy = " + str(accuracy))
-    #     plt.show()
-    ######################## Test set ###########################
-    # y_pred = clf.predict(x_test_data)
-    # accuracy = accuracy_score(y_test_data, y_pred)
-    # print("Test Accuracy Score:", accuracy)
-    ############ Confusion Matrix #################
-    #     ax = plt.axes()
-    #     cf_matrix = metrics.confusion_matrix(y_test_data, y_pred)
-    #     s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
-    #     s.set(xlabel='Predicted Label', ylabel='True Label')
-    #     ax.set_title("Accuracy = " + str(accuracy))
-    #     plt.show()
-    ##################################################################
+    ########### Change the kernel and C value ################
+    clf = SVM(linear_kernel, param=1, C=1)
+    clf.fit(x_train, y_train)
+
+    ############### Validation set #####################
+    y_pred = clf.predict(x_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Training Accuracy Score:", accuracy)
+    ########### Confusion Matrix #################
+    ax = plt.axes()
+    cf_matrix = metrics.confusion_matrix(y_test, y_pred)
+    s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
+    s.set(xlabel='Predicted Label', ylabel='True Label')
+    ax.set_title("Training Accuracy = " + str(accuracy))
+    plt.show()
+    ####################### Test set ###########################
+    y_pred = clf.predict(x_test_data)
+    accuracy = accuracy_score(y_test_data, y_pred)
+    print("Test Accuracy Score:", accuracy)
+    ########### Confusion Matrix #################
+    ax = plt.axes()
+    cf_matrix = metrics.confusion_matrix(y_test_data, y_pred)
+    s = sn.heatmap(cf_matrix, annot=True, fmt='g', ax=ax)
+    s.set(xlabel='Predicted Label', ylabel='True Label')
+    ax.set_title("Test Accuracy = " + str(accuracy))
+    plt.show()
+    print("f1 ", metrics.f1_score(y_test_data, y_pred))
+    print("precision", metrics.precision_score(y_test_data, y_pred))
+    print("recall ", metrics.recall_score(y_test_data, y_pred))
+    ################################################################
 
     # List the hyperparameter for your kernel
-    hyperparameter = [0.01, 0.1, 1, 3]
-    c_value = [0.01, 0.1, 1, 10]  # List the c for the SVM
-    kf = KFold(n_splits=5)
-    for i in hyperparameter:
-        for c in c_value:
-            acc = []
-            f1 = []
-            precision = []
-            recall = []
-            print("Using parameter {} and C={}".format(i, c))
-            for train_index, test_index in kf.split(X):
-                x_train, x_test = X.iloc[train_index], X.iloc[test_index]
-                y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-                sc_x = StandardScaler()
-                x_train = sc_x.fit_transform(x_train)
-                x_train = np.vstack(x_train)
-                x_test = sc_x.transform(x_test)
-                x_test = np.vstack(x_test)
-                y_train = np.hstack(y_train)
-                y_test = np.hstack(y_test)
-                ########################################
-                # Change the kernel here
-                ########################################
-                clf = SVM(rbf_kernel, param=i, C=c)
-                clf.fit(x_train, y_train)
-                y_pred = clf.predict(x_test)
-                accuracy = accuracy_score(y_test, y_pred)
-                acc.append(accuracy)
-                f1.append(metrics.f1_score(y_test, y_pred))
-                precision.append(metrics.precision_score(y_test, y_pred))
-                recall.append(metrics.recall_score(y_test, y_pred))
+    # hyperparameter = [2, 3]
+    # c_value = [0.01, 0.1, 1, 10]  # List the c for the SVM
+    # kf = KFold(n_splits=5)
+    # for i in hyperparameter:
+    #     for c in c_value:
+    #         acc = []
+    #         f1 = []
+    #         precision = []
+    #         recall = []
+    #         print("Using parameter {} and C={}".format(i, c))
+    #         for train_index, test_index in kf.split(X):
+    #             x_train, x_test = X.iloc[train_index], X.iloc[test_index]
+    #             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    #             sc_x = StandardScaler()
+    #             x_train = sc_x.fit_transform(x_train)
+    #             x_train = np.vstack(x_train)
+    #             x_test = sc_x.transform(x_test)
+    #             x_test = np.vstack(x_test)
+    #             y_train = np.hstack(y_train)
+    #             y_test = np.hstack(y_test)
+    #             ########################################
+    #             # Change the kernel here
+    #             ########################################
+    #             clf = SVM(polynomial_kernel, param=i, C=c)
+    #             clf.fit(x_train, y_train)
+    #             y_pred = clf.predict(x_test)
+    #             accuracy = accuracy_score(y_test, y_pred)
+    #             acc.append(accuracy)
+    #             f1.append(metrics.f1_score(y_test, y_pred))
+    #             precision.append(metrics.precision_score(y_test, y_pred))
+    #             recall.append(metrics.recall_score(y_test, y_pred))
 
-            print("Accuracy-Score Min: {} Max: {} Avg: {}".format(np.min(acc),
-                  np.max(acc), np.average(acc)))
-            print("F1-Score Min: {} Max: {} Avg: {}".format(np.min(f1),
-                  np.max(f1), np.average(f1)))
-            print("Precision-Score Min: {} Max: {} Avg: {}".format(np.min(precision),
-                                                                   np.max(precision), np.average(precision)))
-            print("Recall-Score Min: {} Max: {} Avg: {}".format(np.min(recall),
-                                                                np.max(recall), np.average(recall)))
+    #         print("Accuracy-Score Min: {} Max: {} Avg: {}".format(np.min(acc),
+    #               np.max(acc), np.average(acc)))
+    #         print("F1-Score Min: {} Max: {} Avg: {}".format(np.min(f1),
+    #               np.max(f1), np.average(f1)))
+    #         print("Precision-Score Min: {} Max: {} Avg: {}".format(np.min(precision),
+    #                                                                np.max(precision), np.average(precision)))
+    #         print("Recall-Score Min: {} Max: {} Avg: {}".format(np.min(recall),
+    #                                                             np.max(recall), np.average(recall)))
