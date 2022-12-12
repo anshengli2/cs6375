@@ -203,6 +203,25 @@ if __name__ == "__main__":
     print("precision", metrics.precision_score(y_test_data, y_pred))
     print("recall ", metrics.recall_score(y_test_data, y_pred))
     ################################################################
+    ################ SKLEARN ################
+    # create svm classifier
+    clf = svm.SVC(kernel='linear') # Linear Kernel
+
+    # train the model
+    clf.fit(x_train, y_train)
+
+    # predict the test
+    y_pred = clf.predict(x_test_data)
+
+    # model accuracy
+    print("Train Accuracy:",metrics.accuracy_score(y_test, y_pred))
+    print("Test Accuracy:",metrics.accuracy_score(y_test_data, y_pred))
+
+    # model precision
+    print("Precision:",metrics.precision_score(y_test, y_pred))
+
+    # model recall
+    print("Recall:",metrics.recall_score(y_test, y_pred))
 
     # List the hyperparameter for your kernel
     # hyperparameter = [2, 3]
